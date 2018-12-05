@@ -14,7 +14,7 @@ using ContosoUniversity.Logging;
 
 namespace ContosoUniversity.DAL
 {
-    public class SchoolInterceptorLogging
+    public class SchoolInterceptorLogging : DbCommandInterceptor
     {
         private ILogger _logger = new Logger();
         private readonly Stopwatch _stopwatch = new Stopwatch();
@@ -39,6 +39,45 @@ namespace ContosoUniversity.DAL
             base.ScalarExecuted(command, interceptionContext);
         }
 
+        public override void NonQueryExecuting(DbCommand command, DbCommandInterceptionContext<int> interceptionContext)
+        {
+            base.NonQueryExecuting(command, interceptionContext);
+            _stopwatch.Restart();
+        }
+
+        public override void NonQueryExecuted(DbCommand command, DbCommandInterceptionContext<int> interceptionContext)
+        {
+            _stopwatch.Stop();
+            if (interceptionContext.Exception != null)
+            {
+                _logger.Error(interceptionContext.Exception, "Error executing command: {0}", command.CommandText);
+            }
+            else
+            {
+                _logger.TraceApi("SQL Database", "SchoolInterceptor.NonQueryExecuted", _stopwatch.Elapsed, "Command: {0}: ", command.CommandText);
+            }
+            base.NonQueryExecuted(command, interceptionContext);
+        }
+
+        public override void ReaderExecuting(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext)
+        {
+            base.ReaderExecuting(command, interceptionContext);
+            _stopwatch.Restart();
+        }
+
+        public override void ReaderExecuted(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext)
+        {
+            _stopwatch.Stop();
+            if (interceptionContext.Exception != null)
+            {
+                _logger.Error(interceptionContext.Exception, "Error executing command: {0}", command.CommandText);
+            }
+            else
+            {
+                _logger.TraceApi("SQL Database", "SchoolInterceptor.ReaderExecuted", _stopwatch.Elapsed, "Command: {0}: ", command.CommandText);
+            }
+            base.ReaderExecuted(command, interceptionContext);
+        }
+
     }
 }
-//https://docs.microsoft.com/pt-br/aspnet/mvc/overview/getting-started/getting-started-with-ef-using-mvc/connection-resiliency-and-command-interception-with-the-entity-framework-in-an-asp-net-mvc-application

@@ -36,7 +36,7 @@ namespace ContosoUniversity.Logging
 
         public void Warning(Exception exception, string fmt, params object[] vars)
         {
-            Trace.TraceWarning(FormatExceptionMessage(exception, fmt, vars);
+            Trace.TraceWarning(FormatExceptionMessage(exception, fmt, vars));
         }
 
         public void Error(string message)
